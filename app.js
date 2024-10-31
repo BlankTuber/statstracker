@@ -161,6 +161,18 @@ app.get('/logout', (req, res) => {
     });
 });
 
+app.get('/newGame', (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.redirect('/login');
+    }
+    
+    res.render('newGame', {
+        isLoggedIn: req.session.isLoggedIn,
+        seo: req.seo,
+        styleName: "newGame"
+    });
+});
+
 
 app.post('/upload', async (req, res) => {
     if (!req.session.isLoggedIn) {
@@ -203,6 +215,35 @@ app.post('/upload', async (req, res) => {
         console.error('Error processing the image:', error);
         res.status(500).send('Error processing the image.');
     }
+});
+
+// 404 Error Handler
+app.use((req, res, next) => {
+    res.status(404);
+    res.render('error', {
+        isLoggedIn: req.session.isLoggedIn,
+        status: 404,
+        message: 'Page Not Found',
+        seo: { title: '404 - Page Not Found' },
+        styleName: 'error'
+    });
+});
+
+// General Error Handler
+app.use((err, req, res, next) => {
+    const status = err.status || 500;
+    const message = 'Internal Server Error';
+
+    console.error(err);
+
+    res.status(status);
+    res.render('error', {
+        isLoggedIn: req.session.isLoggedIn,
+        status: status,
+        message: message,
+        seo: { title: `${status} - ${message}` },
+        styleName: 'error'
+    });
 });
 
 const PORT = config.port || 3000;
