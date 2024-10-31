@@ -1,0 +1,30 @@
+main{
+    width: 80%;
+    height: 87.5%;
+    margin: auto;
+    margin-top: 2.5vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+}
+
+.redirectButtons{
+    width: 75%;
+    min-width: 200px;
+    aspect-ratio: 10/3;
+    font-family: var(--font-family);
+    font-size: 1.5rem;
+    background-color: var(--second-color);
+    color: var(--text-dark);
+    border-radius: 10px;
+    border: 2px solid var(--fourth-color);
+    cursor: pointer;
+    transition-duration: 0.3s;
+}
+
+.redirectButtons:hover{
+    background-color: var(--fifth-color);
+    border-color: black;
+    color: var(--text-light);
+}

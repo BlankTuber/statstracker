@@ -1,0 +1,35 @@
+.header{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    height: 7.5vh;
+    border-bottom: 2px solid var(--second-color);
+    transition-duration: 1s;
+}
+
+.header:hover{
+    border-bottom-color: var(--fifth-color);
+}
+
+.iconDiv{
+    height: 50%;
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid var(--second-color);
+    border-radius: 100px;
+    padding: 1vh;
+    transition-duration: 0.3s;
+}
+
+.iconDiv:hover{
+    border-color: var(--fifth-color);
+    cursor: pointer;
+    background-color: var(--third-color);
+}
+
+.iconImg{
+    width: 100%;
+    aspect-ratio: 1/1;
+}

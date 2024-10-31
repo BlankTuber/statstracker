@@ -63,13 +63,10 @@ app.use(session({
     }
 }));
 
-
-let isLoggedIn = false;
-
 const transporter = nodemailer.createTransport({
     host: config.emailHost,
     port: config.emailPort,
-    secure: config.emailSecure,
+    secure: 'false',
     auth: {
         user: config.emailUser,
         pass: config.emailPassword
@@ -77,25 +74,25 @@ const transporter = nodemailer.createTransport({
 });
 
 app.get('/', (req, res) => {
-    if (!isLoggedIn) {
+    if (!req.session.isLoggedIn) {
         return res.redirect('/login');
     }
     
     res.render('index', {
-        isLoggedIn,
+        isLoggedIn: req.session.isLoggedIn,
         seo: req.seo,
         styleName: "home"
     });
 });
 
 app.get('/login', (req, res) => {
-    if (isLoggedIn) {
+    if (req.session.isLoggedIn) {
         return res.redirect('/');
     }
     
     req.seo.title = "Login";
     res.render('login', {
-        isLoggedIn,
+        isLoggedIn: req.session.isLoggedIn,
         seo: req.seo,
         styleName: "login"
     });
@@ -140,8 +137,8 @@ app.post('/login/verify', async (req, res) => {
     
         const storedCode = await Code.findOne({ user: user._id, code });
         if (storedCode) {
+            req.session.isLoggedIn = true;
             req.session.userId = user._id;
-            isLoggedIn = true;
             
             await Code.deleteOne({ _id: storedCode._id });
             
@@ -160,13 +157,16 @@ app.get('/logout', (req, res) => {
         if (err) {
             console.error('Error destroying session:', err);
         }
-        isLoggedIn = false;
         res.redirect('/login');
     });
 });
 
 
 app.post('/upload', async (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.status(401).send('Unauthorized: Please log in to upload files.');
+    }
+
     const { files } = req;
 
     if (!files || Object.keys(files).length === 0) {

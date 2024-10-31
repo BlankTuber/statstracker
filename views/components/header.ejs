@@ -26,9 +26,9 @@
     <body>
         <% if(isLoggedIn){ %>
             <header class="header">
-                <div class="iconDiv"><img src="/assets/icons/home.svg" alt="Home" class="iconImg"></div>
-                <div class="iconDiv"><img src="/assets/icons/team.svg" alt="Team" class="iconImg"></div>
-                <div class="iconDiv"><img src="/assets/icons/profile.svg" alt="Profile" class="iconImg"></div>
-                <div class="iconDiv"><img src="/assets/icons/logout.svg" alt="Logout" class="iconImg"></div>
+                <div class="iconDiv" onclick="window.location.href = '/'"><img src="/assets/icons/home.svg" alt="Home" class="iconImg"></div>
+                <div class="iconDiv" onclick="window.location.href = '/team'"><img src="/assets/icons/team.svg" alt="Team" class="iconImg"></div>
+                <div class="iconDiv" onclick="window.location.href = '/profile'"><img src="/assets/icons/profile.svg" alt="Profile" class="iconImg"></div>
+                <div class="iconDiv" onclick="window.location.href = '/logout'"><img src="/assets/icons/logout.svg" alt="Logout" class="iconImg"></div>
             </header>
         <% } %>
