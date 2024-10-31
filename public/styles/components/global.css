@@ -1,0 +1,32 @@
+@import url('https://fonts.googleapis.com/css2?family=Sansita:ital,wght@0,400;0,700;0,800;0,900;1,400;1,700;1,800;1,900&display=swap');
+
+:root{
+    --first-color: #FED;
+    --second-color: #FFE0C2;
+    --third-color: #FC9;
+    --fourth-color: #FFB870;
+    --fifth-color: #FFA347;
+
+    --text-dark: black;
+    --text-light: white;
+
+    --font: "Sansita", sans-serif;
+    --font-weight: 400;
+    --font-style: normal;
+}
+
+*{
+    margin: 0;
+    padding: 0;
+}
+
+html, body{
+    height: 100vh;
+    overflow: hidden;
+    width: 100vw;
+    background-color: var(--first-color);
+    color: var(--text-dark);
+    font-family: var(--font);
+    font-weight: var(--font-weight);
+    font-style: var(--font-style);
+}
