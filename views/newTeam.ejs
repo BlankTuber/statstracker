@@ -1,0 +1,29 @@
+<%- include('components/header') %>
+<main class="new-team-container">
+    <h1>Create New Team</h1>
+    <div id="newTeamForm">
+        <div class="form-group">
+            <label for="teamName">Team Name: <input type="text" id="teamName" name="name" required></label>
+        </div>
+        <div class="form-group">
+            <label>Team Logo (optional):</label>
+            <div class="logo-options">
+                <button type="button" id="suggestLogo">Suggest Logo</button>
+                <input type="text" id="logoUrl" placeholder="Or enter logo URL (optional)">
+                <input type="file" id="logoFile" accept="image/*">
+            </div>
+        </div>
+        <div id="logoPreview" class="logo-preview">
+            <img id="previewImage" src="#" alt="Logo preview" style="display: none;">
+        </div>
+        <button type="button" id="createTeam">Create Team</button>
+    </div>
+    <div id="logoSuggestions" class="logo-suggestions" style="display: none;">
+        <h2>Suggested Logos</h2>
+        <div id="suggestedLogos"></div>
+    </div>
+</main>
+
+<script src="/scripts/teamCreation.js"></script>
+<script src="/scripts/logoSuggestion.js"></script>
+<%- include('components/footer') %>

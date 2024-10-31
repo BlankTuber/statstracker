@@ -11,6 +11,7 @@ const sharp = require('sharp');
 const seoMiddleware = require('./seoMiddleware'); // Import the SEO middleware
 const crypto = require('crypto');
 const nodemailer = require('nodemailer');
+const fsp = fs.promises;
 
 
 const app = express();
@@ -38,6 +39,7 @@ app.use(seoMiddleware); // Use the SEO middleware
 
 const User = require('./models/User');
 const Code = require('./models/Code');
+const Team = require('./models/Team');
 
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
@@ -161,11 +163,41 @@ app.get('/logout', (req, res) => {
     });
 });
 
+app.get('/team', async (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.redirect('/login');
+    }
+
+    try {
+        const team = await Team.findOne({ owner: req.session.userId })
+        if (!team){
+            return res.render('newTeam', {
+                isLoggedIn: req.session.isLoggedIn,
+                seo: req.seo,
+                styleName: "newTeam",
+            })
+        } else {
+            req.seo.title = "Team";
+
+            res.render('team', {
+                isLoggedIn: req.session.isLoggedIn,
+                seo: req.seo,
+                styleName: "team",
+                team: team,
+            });
+        }
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Failed to retrieve team information' });
+    }
+});
+
 app.get('/newGame', (req, res) => {
     if (!req.session.isLoggedIn) {
         return res.redirect('/login');
     }
-    
+    req.seo.title = 'New Game';
+
     res.render('newGame', {
         isLoggedIn: req.session.isLoggedIn,
         seo: req.seo,
@@ -173,47 +205,127 @@ app.get('/newGame', (req, res) => {
     });
 });
 
-
 app.post('/upload', async (req, res) => {
     if (!req.session.isLoggedIn) {
         return res.status(401).send('Unauthorized: Please log in to upload files.');
     }
 
-    const { files } = req;
-
-    if (!files || Object.keys(files).length === 0) {
-        return res.status(400).send('No files were uploaded.');
-    }
-
-    const uploadedFile = files.file;
-
-    if (!uploadedFile.mimetype.startsWith('image/')) {
-        return res.status(400).send('Only image files are allowed.');
-    }
-
-    if (!uploadedFile.tempFilePath) {
-        return res.status(400).send('Temporary file path not found.');
-    }
-
-    const uniqueFilename = `${uuidv4()}-${uploadedFile.name}`;
+    let inputBuffer;
+    let originalFilename;
+    let tempFilePath;
 
     try {
-        const image = sharp(uploadedFile.tempFilePath);
+        if (req.files && req.files.file) {
+            // Handle file upload
+            const uploadedFile = req.files.file;
+            if (!uploadedFile.mimetype.startsWith('image/')) {
+                return res.status(400).send('Only image files are allowed.');
+            }
+            inputBuffer = uploadedFile.data;
+            originalFilename = uploadedFile.name;
+            tempFilePath = uploadedFile.tempFilePath;
+        } else if (req.body.url) {
+            // Handle URL-based upload
+            const response = await axios.get(req.body.url, { responseType: 'arraybuffer' });
+            inputBuffer = Buffer.from(response.data, 'binary');
+            originalFilename = path.basename(req.body.url);
+        } else {
+            return res.status(400).send('No file or URL provided.');
+        }
+
+        const uniqueFilename = `${uuidv4()}-${originalFilename}`;
+        const outputPath = path.join(uploadsDir, uniqueFilename);
+
+        // Process and save the image
+        const image = sharp(inputBuffer);
         const metadata = await image.metadata();
 
         if (metadata.width > 800) {
             await image.resize({ width: 800 })
                 .jpeg({ quality: 80 })
-                .toFile(path.join(uploadsDir, uniqueFilename));
+                .toFile(outputPath);
         } else {
             await image.jpeg({ quality: 80 })
-                .toFile(path.join(uploadsDir, uniqueFilename));
+                .toFile(outputPath);
         }
 
-        res.status(201).send(`File uploaded and compressed to ${uploadsDir}/${uniqueFilename}`);
+        // Delete the temporary file if it exists
+        if (tempFilePath) {
+            await fsp.unlink(tempFilePath);
+        }
+
+        // Delete previously uploaded file if it exists
+        if (req.body.teamId) {
+            const team = await Team.findById(req.body.teamId);
+            if (team && team.logo) {
+                const oldLogoPath = path.join(__dirname, 'public', team.logo);
+                if (await fsp.access(oldLogoPath).then(() => true).catch(() => false)) {
+                    await fsp.unlink(oldLogoPath);
+                }
+            }
+        }
+
+        res.status(201).json({ url: `./public/uploads/${uniqueFilename}` });
     } catch (error) {
         console.error('Error processing the image:', error);
         res.status(500).send('Error processing the image.');
+    }
+});
+
+app.post('/newTeam', async (req, res) => {
+    if (!req.session.isLoggedIn) {
+        return res.status(401).send('Unauthorized: Please log in to create a new team.');
+    }
+
+    try {
+        const existingTeam = await Team.findOne({owner: req.session.userId});
+        if (existingTeam) {
+            return res.status(400).json({ error: 'You already have a team, and cannot create a new one right now.' });
+        }
+
+        const { name, logo } = req.body;
+
+        if (!name) {
+            return res.status(400).json({ error: 'Team name is required.' });
+        }
+
+        const newTeam = new Team({
+            name,
+            logo: logo || null, // Logo is optional
+            owner: req.session.userId,
+            games: [],
+            players: []
+        });
+
+        await newTeam.save();
+
+        res.status(201).json({
+            message: 'Team created successfully',
+            team: {
+                id: newTeam._id,
+                name: newTeam.name,
+                logo: newTeam.logo
+            }
+        });
+    } catch (error) {
+        console.error('Error creating new team:', error);
+        res.status(500).json({ error: 'An error occurred while creating the team.' });
+    }
+});
+
+const axios = require('axios');
+const cheerio = require('cheerio');
+
+app.get('/api/search-logos', async (req, res) => {
+    const query = req.query.query;
+    try {
+        const response = await axios.get(`https://www.google.com/search?q=${encodeURIComponent(query)}&tbm=isch`);
+        const $ = cheerio.load(response.data);
+        const images = $('img').map((i, el) => $(el).attr('src')).get();
+        res.json(images.slice(1, 5));
+    } catch (error) {
+        console.error('Error searching for logos:', error);
+        res.status(500).json({ error: 'Failed to search for logos' });
     }
 });
 
