@@ -9,6 +9,9 @@ const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const sharp = require('sharp');
 const seoMiddleware = require('./seoMiddleware'); // Import the SEO middleware
+const crypto = require('crypto');
+const nodemailer = require('nodemailer');
+
 
 const app = express();
 
@@ -33,10 +36,135 @@ app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
 app.use(seoMiddleware); // Use the SEO middleware
 
+const User = require('./models/User');
+const Code = require('./models/Code');
+
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
 if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
+
+
+
+app.use(session({
+    secret: config.sessionSecret || 'default-secret-key',
+    resave: false,
+    saveUninitialized: false,
+    store: MongoStore.create({ 
+        mongoUrl: config.mongoURI,
+        collectionName: 'sessions',
+        ttl: 30 * 24 * 60 * 60
+    }),
+    cookie: {
+        secure: config.nodeEnv === 'production',
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 30 * 24 * 60 * 60 * 1000
+    }
+}));
+
+
+let isLoggedIn = false;
+
+const transporter = nodemailer.createTransport({
+    host: config.emailHost,
+    port: config.emailPort,
+    secure: config.emailSecure,
+    auth: {
+        user: config.emailUser,
+        pass: config.emailPassword
+    }
+});
+
+app.get('/', (req, res) => {
+    if (!isLoggedIn) {
+        return res.redirect('/login');
+    }
+    
+    res.render('index', {
+        isLoggedIn,
+        seo: req.seo,
+        styleName: "home"
+    });
+});
+
+app.get('/login', (req, res) => {
+    if (isLoggedIn) {
+        return res.redirect('/');
+    }
+    
+    req.seo.title = "Login";
+    res.render('login', {
+        isLoggedIn,
+        seo: req.seo,
+        styleName: "login"
+    });
+});
+
+app.post('/login/getCode', async (req, res) => {
+    const { email } = req.body;
+    
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: 'Email not found in closed beta list' });
+        }
+    
+        const code = crypto.randomInt(100000, 999999).toString();
+        
+        await Code.create({ user: user._id, code });
+        
+        await transporter.sendMail({
+            from: `"${config.emailFromName}" <${config.emailFromAddress}>`,
+            to: email,
+            subject: "Your Verification Code",
+            text: `Your verification code is: ${code}`,
+            html: `<p>Your verification code is: <strong>${code}</strong></p>`
+        });
+        
+        res.status(200).json({ message: 'Verification code sent successfully' });
+    } catch (error) {
+        console.error('Error in getCode:', error);
+        res.status(500).json({ error: 'Failed to send verification code' });
+    }
+});
+
+app.post('/login/verify', async (req, res) => {
+    const { email, code } = req.body;
+    
+    try {
+        const user = await User.findOne({ email });
+        if (!user) {
+            return res.status(400).json({ error: 'User not found' });
+        }
+    
+        const storedCode = await Code.findOne({ user: user._id, code });
+        if (storedCode) {
+            req.session.userId = user._id;
+            isLoggedIn = true;
+            
+            await Code.deleteOne({ _id: storedCode._id });
+            
+            res.status(200).json({ message: 'Authentication successful' });
+        } else {
+            res.status(400).json({ error: 'Invalid verification code' });
+        }
+    } catch (error) {
+        console.error('Error in verify:', error);
+        res.status(500).json({ error: 'Authentication failed' });
+    }
+});
+
+app.get('/logout', (req, res) => {
+    req.session.destroy((err) => {
+        if (err) {
+            console.error('Error destroying session:', err);
+        }
+        isLoggedIn = false;
+        res.redirect('/login');
+    });
+});
+
 
 app.post('/upload', async (req, res) => {
     const { files } = req;
@@ -75,48 +203,6 @@ app.post('/upload', async (req, res) => {
         console.error('Error processing the image:', error);
         res.status(500).send('Error processing the image.');
     }
-});
-
-app.use(session({
-    secret: config.sessionSecret || 'default-secret-key',
-    resave: false,
-    saveUninitialized: false,
-    store: MongoStore.create({ 
-        mongoUrl: config.mongoURI,
-        collectionName: 'sessions',
-        ttl: 30 * 24 * 60 * 60
-    }),
-    cookie: {
-        secure: config.nodeEnv === 'production',
-        httpOnly: true,
-        sameSite: 'strict',
-        maxAge: 30 * 24 * 60 * 60 * 1000
-    }
-}));
-
-let isLoggedIn = false;
-
-app.get('/', (req, res) => {
-    if (!isLoggedIn) {
-        return res.redirect('/login');
-    }
-    res.render('index', {
-        isLoggedIn,
-        seo: req.seo, // Pass SEO data to the view
-        styleName: "home"
-    });
-});
-
-app.get('/login', (req, res) => {
-    if (isLoggedIn) {
-        return res.redirect('/');
-    }
-    req.seo.title = "Login";
-    res.render('login', {
-        isLoggedIn,
-        seo: req.seo, // Pass SEO data to the view
-        styleName: "login"
-    });
 });
 
 const PORT = config.port || 3000;
