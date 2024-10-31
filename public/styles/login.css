@@ -1,0 +1,74 @@
+main{
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    gap: 10vh;
+    height: 100%;
+}
+
+h1{
+    font-size: 3.5vh;
+    text-align: center;
+}
+
+h1 span:nth-child(1){
+    text-decoration: underline;
+    text-underline-offset: 10px;
+    text-decoration-color: var(--fifth-color);
+}
+h1 span:nth-child(2){
+    text-decoration: overline;
+    text-decoration-color: var(--fifth-color);
+}
+
+.inputDiv{
+    width: 80%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-bottom: 2px solid var(--text-dark);
+}
+
+.inputDiv input{
+    font-family: var(--font-family);
+    font-weight: var(--font-weight);
+    font-style: var(--font-style);
+    width: 95%;
+    height: 5vh;
+    font-size: 2vh;
+    background-color: transparent;
+    border: none;
+}
+
+.inputDiv input:focus{
+    outline: none;
+}
+
+.buttonHolder{
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 90%;
+}
+
+.buttonHolder button{
+    font-family: var(--font-family);
+    font-weight: var(--font-weight);
+    font-style: var(--font-style);
+    background-color: var(--third-color);
+    color: var(--text-dark);
+    border: 2px solid var(--fifth-color);
+    border-radius: 8px;
+    cursor: pointer;
+    width: 45%;
+    aspect-ratio: 10/2.5;
+    font-size: 2vh;
+    max-width: 350px;
+    transition-duration: 0.3s;
+}
+
+.buttonHolder button:hover{
+    background-color: var(--fifth-color);
+    color: var(--text-light);
+}

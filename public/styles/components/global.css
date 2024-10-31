@@ -29,4 +29,5 @@ html, body{
     font-family: var(--font);
     font-weight: var(--font-weight);
     font-style: var(--font-style);
+    font-size: 16px;
 }

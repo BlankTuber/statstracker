@@ -8,7 +8,6 @@ const fs = require('fs');
 const path = require('path');
 const { v4: uuidv4 } = require('uuid');
 const sharp = require('sharp');
-const favicon = require('serve-favicon');
 const seoMiddleware = require('./seoMiddleware'); // Import the SEO middleware
 
 const app = express();
@@ -32,7 +31,6 @@ app.use(fileUpload({
 
 app.set('view engine', 'ejs');
 app.use(express.static(path.join(__dirname, 'public')));
-app.use(favicon(path.join(__dirname, 'public', 'assets', 'images', 'favicon.ico'))); // Serve the favicon
 app.use(seoMiddleware); // Use the SEO middleware
 
 const uploadsDir = path.join(__dirname, 'public', 'uploads');
@@ -103,6 +101,7 @@ app.get('/', (req, res) => {
         return res.redirect('/login');
     }
     res.render('index', {
+        isLoggedIn,
         seo: req.seo, // Pass SEO data to the view
         styleName: "home"
     });
@@ -112,7 +111,9 @@ app.get('/login', (req, res) => {
     if (isLoggedIn) {
         return res.redirect('/');
     }
+    req.seo.title = "Login";
     res.render('login', {
+        isLoggedIn,
         seo: req.seo, // Pass SEO data to the view
         styleName: "login"
     });

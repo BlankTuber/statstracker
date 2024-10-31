@@ -16,7 +16,6 @@
     "express-fileupload": "^1.5.1",
     "express-session": "^1.18.1",
     "mongoose": "^8.7.3",
-    "serve-favicon": "^2.5.0",
     "sharp": "^0.33.5",
     "uuid": "^11.0.2"
   }
