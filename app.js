@@ -68,12 +68,15 @@ app.use(session({
 const transporter = nodemailer.createTransport({
     host: config.emailHost,
     port: config.emailPort,
-    secure: 'false',
-    auth: {
-        user: config.emailUser,
-        pass: config.emailPassword
-    }
+    secure: config.nodeEnv === 'production',
+    ...(config.nodeEnv === 'production' && {
+        auth: {
+            user: config.emailUser,
+            pass: config.emailPassword
+        }
+    })
 });
+
 
 app.get('/', (req, res) => {
     if (!req.session.isLoggedIn) {
