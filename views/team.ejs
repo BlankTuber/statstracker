@@ -1,6 +1,28 @@
 <%- include('components/header') %>
+<style>
+    body {
+        position: relative;
+    }
+
+    body::before {
+        content: '';
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 50%;
+        height: 50%;
+        background-image: url("<%= team.logo %>");
+        background-size: contain;
+        background-repeat: no-repeat;
+        background-position: center;
+        mix-blend-mode: darken;
+        opacity: 0.1;
+        pointer-events: none;
+    }
+</style>
 <main>
-    <h1 id="teamName">TeamName</h1>
+    <h1 id="teamName"><%= team.name %></h1>
     <section id="otherStuff">
         <div>
             <input type="text" id="newPlayerInput">
@@ -11,26 +33,12 @@
         </div>
     </section>
     <section id="playerDisplays">
-        <div class="player">
-            <p>Player1</p>
-            <div class="deleteBtn"><img src="/assets/icons/delete.svg" alt="Delete" class="deleteIcon"></div>
-        </div>
-        <div class="player">
-            <p>Player2</p>
-            <div class="deleteBtn"><img src="/assets/icons/delete.svg" alt="Delete" class="deleteIcon"></div>
-        </div>
-        <div class="player">
-            <p>Player3</p>
-            <div class="deleteBtn"><img src="/assets/icons/delete.svg" alt="Delete" class="deleteIcon"></div>
-        </div>
-        <div class="player">
-            <p>Player4</p>
-            <div class="deleteBtn"><img src="/assets/icons/delete.svg" alt="Delete" class="deleteIcon"></div>
-        </div>
-        <div class="player">
-            <p>Player5</p>
-            <div class="deleteBtn"><img src="/assets/icons/delete.svg" alt="Delete" class="deleteIcon"></div>
-        </div>
+        <% team.players.forEach(player => { %>
+            <div class="player">
+                <p><%= player %></p>
+                <div class="deleteBtn"><img src="/assets/icons/delete.svg" alt="Delete" class="deleteIcon"></div>
+            </div>
+        <% }) %>
     </section>
 </main>
 <%- include('components/footer') %>

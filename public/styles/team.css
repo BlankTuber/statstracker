@@ -1,28 +1,145 @@
-main{
+main {
     width: 95%;
+    height: 87.5%;
     margin: auto;
-    margin-top: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 3rem;
+    gap: 4vh;
+    padding: 2vh 0;
+    overflow-y: auto;
 }
 
-#teamName{
+#teamName {
     width: 100%;
     text-align: center;
+    font-size: 2rem;
+    color: var(--text-dark);
 }
 
-#otherStuff{
+#otherStuff {
     width: 100%;
     display: flex;
     justify-content: space-around;
     align-items: center;
+    gap: 2vh;
+    flex-wrap: wrap;
 }
 
-#otherStuff div{
-    width: 40%;
+#otherStuff div {
     display: flex;
     align-items: center;
     justify-content: center;
+    gap: 1vh;
+}
+
+/* Input styling based on login page */
+#newPlayerInput {
+    font-family: var(--font);
+    font-weight: var(--font-weight);
+    font-style: var(--font-style);
+    width: 70%;
+    font-size: 1.25rem;
+    background-color: transparent;
+    border: none;
+    border-bottom: 2px solid var(--text-dark);
+}
+
+#newPlayerInput:focus {
+    outline: none;
+}
+
+.addBtn {
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 3px solid var(--second-color);
+    border-radius: 100px;
+    padding: 1vh;
+    transition-duration: 0.3s;
+    cursor: pointer;
+}
+
+.addBtn:hover {
+    border-color: var(--fifth-color);
+    background-color: var(--third-color);
+}
+
+.addIcon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+.statsBtn {
+    font-family: var(--font);
+    font-weight: var(--font-weight);
+    font-style: var(--font-style);
+    background-color: var(--third-color);
+    color: var(--text-dark);
+    border: 2px solid var(--fifth-color);
+    border-radius: 8px;
+    cursor: pointer;
+    height: 4vh;
+    aspect-ratio: 10/3;
+    font-size: 1.25rem;
+    transition-duration: 0.3s;
+}
+
+.statsBtn:hover {
+    background-color: var(--fifth-color);
+    color: var(--text-light);
+}
+
+/* Player displays section */
+#playerDisplays {
+    width: 90%;
+    display: flex;
+    flex-direction: column;
+    gap: 2vh;
+    padding: 2vh;
+}
+
+.player {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 2vh;
+    background-color: var(--second-color);
+    border: 2px solid var(--fourth-color);
+    border-radius: 8px;
+    transition-duration: 0.3s;
+}
+
+.player:hover {
+    background-color: var(--third-color);
+    border-color: var(--fifth-color);
+}
+
+.player p {
+    font-size: 1.25rem;
+}
+
+.deleteBtn {
+    aspect-ratio: 1/1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border: 2px solid var(--fourth-color);
+    border-radius: 100px;
+    padding: 0.5vh;
+    transition-duration: 0.3s;
+    cursor: pointer;
+}
+
+.deleteBtn:hover {
+    border-color: var(--fifth-color);
+    background-color: var(--third-color);
+}
+
+.deleteIcon {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
 }
