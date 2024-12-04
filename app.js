@@ -46,8 +46,6 @@ if (!fs.existsSync(uploadsDir)) {
     fs.mkdirSync(uploadsDir, { recursive: true });
 }
 
-
-
 app.use(session({
     secret: config.sessionSecret || 'default-secret-key',
     resave: false,
@@ -76,7 +74,6 @@ const transporter = nodemailer.createTransport({
         }
     })
 });
-
 
 app.get('/', (req, res) => {
     if (!req.session.isLoggedIn) {
@@ -331,6 +328,10 @@ app.get('/api/search-logos', async (req, res) => {
         res.status(500).json({ error: 'Failed to search for logos' });
     }
 });
+
+const teamApi = require('./api/teamApi');
+
+app.use('/api/teams/', teamApi);
 
 // 404 Error Handler
 app.use((req, res, next) => {
